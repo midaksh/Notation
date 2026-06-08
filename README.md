@@ -1,5 +1,4 @@
 # Notation
----
 
 ## A slim Note taking workspace where docs are reimagined.
 
@@ -30,4 +29,5 @@
 23. Settings modal (appearance)
 24. Toast notifications for create, archive, publish, and delete actions
 25. Loading skeletons and empty states
-# Notation
+
+---
