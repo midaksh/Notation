@@ -48,6 +48,7 @@ AGENTS.md
 CLAUDE.md
 agents.md
 claude.md
+DESIGN.md
 .agents/
 skills-lock.json
 .cursor/
