@@ -1,6 +1,7 @@
 "use server"
 
 import { headers } from "next/headers"
+import { isSupabaseConfigured } from "@/lib/env"
 import supabaseAdmin from "@/libs/supabaseAdmin"
 
 const extractUTMParams = (searchParams: { [key: string]: string | string[] | undefined } = {}) => ({
@@ -15,7 +16,8 @@ export async function trackVisitAction(
   userId: string | undefined,
   searchParams: { [key: string]: string | string[] | undefined } = {},
 ) {
-  if (!userId) return console.log(20, "no user id to track visit")
+  if (!isSupabaseConfigured()) return
+  if (!userId) return
   const utmParams = extractUTMParams(searchParams)
   const hasUTMParams = Object.values(utmParams).some(param => param !== undefined)
 

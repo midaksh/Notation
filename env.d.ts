@@ -8,6 +8,8 @@ declare global {
       EDGE_STORE_SECRET_KEY: string
       NEXT_PUBLIC_CLOUDFLARE_SITE_KEY: string
       TURNSTILE_SECRET_KEY: string
+      NEXT_PUBLIC_SUPABASE_URL: string
+      SUPABASE_SERVICE_ROLE_KEY: string
     }
   }
 
