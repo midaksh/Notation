@@ -1,13 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverActions: {
-      bodySizeLimit: "2mb",
-    },
-  },
   reactStrictMode: false,
   images: {
-    domains: ["files.edgestore.dev"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "files.edgestore.dev",
+      },
+    ],
   },
 }
 

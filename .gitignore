@@ -24,8 +24,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # local env files
+.env
 .env*.local
 
 # vercel
@@ -34,3 +36,25 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# convex local dev cache
+.convex/
+
+# convex ai / agent tooling (generated locally)
+convex/_generated/ai/
+
+# cursor / ai agent files (local only)
+AGENTS.md
+CLAUDE.md
+agents.md
+claude.md
+.agents/
+skills-lock.json
+.cursor/
+
+# editor / os
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

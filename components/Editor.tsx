@@ -5,6 +5,7 @@ import {BlockNoteView,useBlockNote} from '@blocknote/react'
 import '@blocknote/core/style.css'
 import { useTheme } from "next-themes"
 
+import { useEdgeStoreEnabled } from "@/components/providers/optional-edgestore-provider"
 import { useEdgeStore } from "@/lib/edgestore"
 
 interface EditorProps{
@@ -13,30 +14,60 @@ interface EditorProps{
   editable?:boolean
 }
 
-function Editor ({onChange,initialContent,editable}:EditorProps) {
+function EditorContent ({
+  onChange,
+  initialContent,
+  editable,
+  uploadFile,
+}: EditorProps & { uploadFile?: (file: File) => Promise<string> }) {
+  const { resolvedTheme } = useTheme()
 
-  const {resolvedTheme} = useTheme()
-  const {edgestore} = useEdgeStore()
+  const editor: BlockNoteEditor = useBlockNote({
+    editable,
+    initialContent: initialContent ? JSON.parse(initialContent) as PartialBlock[] : undefined,
+    onEditorContentChange: (editor) => {
+      onChange(JSON.stringify(editor.topLevelBlocks, null, 2))
+    },
+    uploadFile,
+  })
 
-  const handleUpload = async (file:File) => {
-    const response = await edgestore.publicFiles.upload({file})
+  return (
+    <div>
+      <BlockNoteView editor={editor} theme={resolvedTheme === 'dark' ? 'dark' : 'light'} />
+    </div>
+  )
+}
 
+function EditorWithUpload (props: EditorProps) {
+  const { edgestore } = useEdgeStore()
+
+  const handleUpload = async (file: File) => {
+    const response = await edgestore.publicFiles.upload({ file })
     return response.url
   }
 
-  const editor:BlockNoteEditor = useBlockNote({
-    editable,
-    initialContent:initialContent ? JSON.parse(initialContent) as PartialBlock[] : undefined,
-    onEditorContentChange:(editor) => {
-      onChange(JSON.stringify(editor.topLevelBlocks,null,2))
-    },
-    uploadFile:handleUpload
-  })
+  return <EditorContent {...props} uploadFile={handleUpload} />
+}
 
-return (
-    <div>
-      <BlockNoteView editor={editor} theme={resolvedTheme === 'dark' ? 'dark' : 'light'}/>
-    </div>
+function Editor ({ onChange, initialContent, editable }: EditorProps) {
+  const edgeStoreEnabled = useEdgeStoreEnabled()
+
+  if (edgeStoreEnabled) {
+    return (
+      <EditorWithUpload
+        onChange={onChange}
+        initialContent={initialContent}
+        editable={editable}
+      />
+    )
+  }
+
+  return (
+    <EditorContent
+      onChange={onChange}
+      initialContent={initialContent}
+      editable={editable}
+    />
   )
 }
 

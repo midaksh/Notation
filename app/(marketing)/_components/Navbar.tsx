@@ -1,5 +1,6 @@
 'use client'
 
+import { useUser } from "@clerk/clerk-react"
 import { useConvexAuth } from "convex/react"
 import { useScrollTop } from "@/hooks/use-scroll-top"
 import { cn } from "@/lib/utils"
@@ -10,12 +11,19 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/spinner"
 import Link from "next/link"
 
-	
+const signInProps = {
+  mode: "modal" as const,
+  asChild: true,
+  forceRedirectUrl: "/documents",
+  signUpForceRedirectUrl: "/documents",
+}
 
 export function Navbar () {
 
-  const {isAuthenticated,isLoading} = useConvexAuth()
+  const { user, isLoaded: clerkLoaded } = useUser()
+  const { isAuthenticated, isLoading: convexLoading } = useConvexAuth()
   const scrolled = useScrollTop()
+  const isLoading = !clerkLoaded || convexLoading
 
 return (
     <div className={cn(`z-50 bg-background dark:bg-[#1F1F1F] fixed top-0 flex items-center w-full p-6`,scrolled && 'border-b shadow-sm')}>
@@ -24,21 +32,21 @@ return (
         {isLoading && (
           <Spinner/>
         )}
-        {!isAuthenticated && !isLoading && (
+        {!isLoading && !isAuthenticated && !user && (
           <>
-            <SignInButton mode="modal">
+            <SignInButton {...signInProps}>
               <Button variant='ghost' size='sm'>
                 Login
               </Button>
             </SignInButton>
-              <SignInButton mode="modal">
-              <Button  size='sm'>
+            <SignInButton {...signInProps}>
+              <Button size='sm'>
                 Get Notation free
               </Button>
             </SignInButton>
           </>
         )}
-        {isAuthenticated && !isLoading && (
+        {!isLoading && isAuthenticated && (
           <>
             <Button variant='ghost' size='sm' asChild>
               <Link href='/documents'>

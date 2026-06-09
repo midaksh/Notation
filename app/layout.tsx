@@ -9,7 +9,8 @@ import { cookies } from "next/headers"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { ConvexClientProvider } from "@/components/providers/convex-provider"
 import { ModalProvider } from "@/components/providers/modal-provider"
-import { EdgeStoreProvider } from "@/lib/edgestore"
+import { OptionalEdgeStoreProvider } from "@/components/providers/optional-edgestore-provider"
+import { isEdgeStoreConfigured, isSupabaseConfigured } from "@/lib/env"
 import { UTMTracker } from "./utm-stats/UTMTracker"
 import { TurnstileGate } from "@/components/turnstile-gate"
 import { TURNSTILE_COOKIE_NAME, TURNSTILE_COOKIE_VALUE } from "@/lib/turnstile"
@@ -53,15 +54,15 @@ export default async function RootLayout({
           />
         ) : null}
         <ConvexClientProvider>
-          <EdgeStoreProvider>
+          <OptionalEdgeStoreProvider enabled={isEdgeStoreConfigured()}>
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange storageKey="notation-theme">
               <Toaster position="bottom-center" />
               <ModalProvider />
               <TurnstileGate initialVerified={initialTurnstileVerified} />
-              <UTMTracker userId={`28-${nanoid()}`} />
+              {isSupabaseConfigured() ? <UTMTracker userId={`28-${nanoid()}`} /> : null}
               {children}
             </ThemeProvider>
-          </EdgeStoreProvider>
+          </OptionalEdgeStoreProvider>
         </ConvexClientProvider>
       </body>
     </html>
