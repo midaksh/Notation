@@ -2,8 +2,8 @@ import './globals.css'
 import { Toaster } from "sonner"
 import { Inter } from 'next/font/google'
 import type { Metadata } from 'next'
-import { nanoid } from 'nanoid'
 import Script from "next/script"
+import { randomUUID } from "crypto"
 import { cookies } from "next/headers"
 
 import { ThemeProvider } from "@/components/providers/theme-provider"
@@ -59,7 +59,7 @@ export default async function RootLayout({
               <Toaster position="bottom-center" />
               <ModalProvider />
               <TurnstileGate initialVerified={initialTurnstileVerified} />
-              {isSupabaseConfigured() ? <UTMTracker userId={`28-${nanoid()}`} /> : null}
+              {isSupabaseConfigured() ? <UTMTracker userId={`28-${randomUUID()}`} /> : null}
               {children}
             </ThemeProvider>
           </OptionalEdgeStoreProvider>
