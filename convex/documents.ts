@@ -2,6 +2,7 @@ import {v} from 'convex/values'
 
 import {mutation,query} from './_generated/server'
 import {Doc,Id} from './_generated/dataModel'
+import {buildSearchText, extractSearchTextFromContent, getMatchSnippetForPhrase, getMatchSnippetForTerms, matchesAllSearchTerms, matchesPhrase, parseSearchTerms} from './lib/searchText'
 
 export const archive = mutation({
   args:{id:v.id("documents")},
@@ -94,7 +95,8 @@ export const create = mutation({
       parentDocument:args.parentDocument,
       userId,
       isArchived:false,
-      isPublished:false
+      isPublished:false,
+      searchText: buildSearchText(args.title),
     })
 
     return document
@@ -207,8 +209,11 @@ export const remove = mutation({
 })
 
 export const getSearch = query({
-  handler:async (context) => {
-   
+  args: {
+    query: v.optional(v.string()),
+    mode: v.optional(v.union(v.literal("words"), v.literal("phrase"))),
+  },
+  handler: async (context, args) => {
     const identity = await context.auth.getUserIdentity()
 
     if (!identity) {
@@ -216,15 +221,66 @@ export const getSearch = query({
     }
 
     const userId = identity.subject
-    
-    const documents = await context.db.query('documents')
-    .withIndex('by_user',q => q.eq('userId',userId))
-    .filter(q => q.eq(q.field('isArchived'),false))
-    .order('desc')
-    .collect()
+
+    const documents = await context.db
+      .query('documents')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .filter((q) => q.eq(q.field('isArchived'), false))
+      .order('desc')
+      .collect()
+
+    const searchQuery = args.query?.trim()
+    const searchTerms = searchQuery ? parseSearchTerms(searchQuery) : []
+    const searchMode = args.mode ?? "words"
+
+    if (searchTerms.length === 0) {
+      return documents.map((doc) => ({
+        _id: doc._id,
+        title: doc.title,
+        icon: doc.icon,
+        snippet: undefined as string | undefined,
+      }))
+    }
 
     return documents
-  }
+      .filter((doc) => {
+        const haystack =
+          doc.searchText ?? buildSearchText(doc.title, doc.content)
+
+        if (searchMode === "phrase") {
+          return searchQuery ? matchesPhrase(haystack, searchQuery) : true
+        }
+
+        return matchesAllSearchTerms(haystack, searchTerms)
+      })
+      .map((doc) => {
+        const bodyText = extractSearchTextFromContent(doc.content)
+          .replace(/\s+/g, " ")
+          .trim()
+        const bodyLower = bodyText.toLowerCase()
+        const normalizedQuery = searchQuery!.toLowerCase()
+
+        let snippet: string | undefined
+
+        if (searchMode === "phrase") {
+          snippet = bodyLower.includes(normalizedQuery)
+            ? getMatchSnippetForPhrase(bodyText, searchQuery!)
+            : undefined
+        } else {
+          const bodyHasMatch = searchTerms.some((term) => bodyLower.includes(term))
+          snippet = bodyHasMatch
+            ? getMatchSnippetForTerms(bodyText, searchTerms)
+            : undefined
+        }
+
+        return {
+          _id: doc._id,
+          title: doc.title,
+          icon: doc.icon,
+          snippet,
+        }
+      })
+  },
 })
 
 export const getById = query({
@@ -287,12 +343,20 @@ export const update = mutation({
       throw new Error('Unauthorized')
     }
 
-    const document = await context.db.patch(args.id,{
-      ...rest
+    const nextTitle = rest.title ?? existingDocument.title
+    const nextContent = rest.content ?? existingDocument.content
+    const searchText =
+      rest.title !== undefined || rest.content !== undefined
+        ? buildSearchText(nextTitle, nextContent)
+        : undefined
+
+    const document = await context.db.patch(args.id, {
+      ...rest,
+      ...(searchText !== undefined ? { searchText } : {}),
     })
 
     return document
-  }
+  },
 })
 
 
@@ -352,4 +416,34 @@ export const removeCoverImage = mutation({
 
     return document
   }
+})
+
+export const backfillSearchText = mutation({
+  handler: async (context) => {
+    const identity = await context.auth.getUserIdentity()
+
+    if (!identity) {
+      throw new Error('Not authenticated')
+    }
+
+    const userId = identity.subject
+
+    const documents = await context.db
+      .query('documents')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .collect()
+
+    let updated = 0
+
+    for (const doc of documents) {
+      if (!doc.searchText) {
+        await context.db.patch(doc._id, {
+          searchText: buildSearchText(doc.title, doc.content),
+        })
+        updated++
+      }
+    }
+
+    return { updated }
+  },
 })
