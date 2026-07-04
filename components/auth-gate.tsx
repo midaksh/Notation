@@ -58,9 +58,8 @@ export function AuthGate ({
   return (
     <SignInButton
       mode="modal"
-      asChild
-      forceRedirectUrl="/documents"
-      signUpForceRedirectUrl="/documents"
+      afterSignInUrl="/documents"
+      afterSignUpUrl="/documents"
     >
       <Button size={signInSize} variant={signInVariant}>
         {signInLabel}

@@ -12,7 +12,7 @@ import { useEdgeStoreEnabled } from "@/components/providers/optional-edgestore-p
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
 import { useEdgeStore } from "@/lib/edgestore"
-import { Skeleton } from "@/components//ui/skeleton"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface CoverProps {
   url?:string
@@ -63,7 +63,7 @@ function CoverWithEdgeStore ({ url, preview }: CoverProps) {
   return (
     <div className={cn(`relative w-full h-[35vh] group`, !url && 'h-[12vh]', url && 'bg-muted')}>
       {!!url && (
-        <Image className="object-cover" src={url} alt='Cover' fill/>
+        <Image className="object-cover" src={url} alt='Cover' fill sizes="100vw"/>
       )}
       {url && <CoverActions url={url} preview={preview} onRemove={onRemove} />}
     </div>
@@ -83,7 +83,7 @@ function CoverWithoutEdgeStore ({ url, preview }: CoverProps) {
   return (
     <div className={cn(`relative w-full h-[35vh] group`, !url && 'h-[12vh]', url && 'bg-muted')}>
       {!!url && (
-        <Image className="object-cover" src={url} alt='Cover' fill/>
+        <Image className="object-cover" src={url} alt='Cover' fill sizes="100vw"/>
       )}
       {url && <CoverActions url={url} preview={preview} onRemove={onRemove} />}
     </div>
