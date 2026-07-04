@@ -1,27 +1,34 @@
 import { Metadata } from "next"
+import Link from "next/link"
 import { redirect } from "next/navigation"
 
 import supabaseServer from "@/libs/supabaseServer"
-import { Navbar } from "@/components/Navbar/Navbar"
+import { isSupabaseConfigured } from "@/lib/env"
 
 export const metadata: Metadata = {
-  title: "Hot Delivery - utm stats",
-  description: "Dashboard for utm stats on hot-delivery.net - we deliver you order as fresh as possible",
+  title: "Notation — UTM stats",
+  description: "Dashboard for UTM visit analytics",
 }
 
 export default async function UTMLayout({ children }: { children: React.ReactNode }) {
-  // it is protected route and only ADMIN role has access to this route
+  if (!isSupabaseConfigured()) {
+    redirect("/")
+  }
+
   const { data: role_response, error: anonymous_user } = await supabaseServer().from("users").select("roles").single()
 
-  // Allow ADMIN to visit this page
   if (!role_response?.roles.includes("ADMIN") || anonymous_user) {
     redirect("/")
   }
 
   return (
-    <>
-      <Navbar />
+    <div className="min-h-screen bg-background">
+      <header className="border-b px-6 py-4">
+        <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+          ← Back to Notation
+        </Link>
+      </header>
       {children}
-    </>
+    </div>
   )
 }
