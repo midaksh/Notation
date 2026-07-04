@@ -78,6 +78,22 @@ convex/documents.* checks userId from identity
 User can create / edit / delete their pages
 ```
 
+### Search flow (⌘K / Ctrl+K)
+
+```text
+User opens search (⌘K)
+       ↓
+Choose mode: All words | Exact phrase
+       ↓
+Query debounced → Convex documents.getSearch
+       ↓
+Match against indexed searchText (title + BlockNote body)
+       ↓
+Results with highlighted matches + content snippets
+       ↓
+Select result → navigate to /documents/[id]
+```
+
 ---
 
 ## Tech stack
@@ -116,15 +132,19 @@ Notation/
 │   ├── modals/               # Settings, cover image, confirm
 │   ├── Editor.tsx            # BlockNote editor
 │   ├── Toolbar.tsx           # Title, icon, cover controls
-│   └── Cover.tsx
+│   ├── Cover.tsx
+│   ├── search-command.tsx    # ⌘K search dialog
+│   ├── search-mode-toggle.tsx
+│   └── highlight-text.tsx    # Match highlighting in results
 │
 ├── convex/
 │   ├── schema.ts             # documents table definition
 │   ├── documents.ts          # CRUD, sidebar, trash, search
+│   ├── lib/searchText.ts     # BlockNote text extraction & matching
 │   ├── auth.config.js        # Clerk JWT issuer for Convex
 │   └── _generated/           # Auto-generated Convex types
 │
-├── hooks/                    # Zustand stores (search, settings, cover)
+├── hooks/                    # Zustand stores + search mode preference
 ├── lib/                      # Utils, env helpers, EdgeStore client
 ├── libs/                     # Supabase admin clients
 └── public/                   # Logos & static assets
@@ -145,19 +165,21 @@ Notation/
 10. Inline image upload (requires EdgeStore)
 11. Page emoji icon (add, change, remove)
 12. Cover image (upload, change, remove — requires EdgeStore)
-13. Quick search across pages (⌘K / Ctrl+K)
-14. Move pages to trash (soft delete)
-15. Trash bin with title filter
-16. Restore pages from trash (including nested children)
-17. Delete pages permanently from trash
-18. Trash banner on archived pages
-19. Publish page to a public read-only link
-20. Unpublish and copy share URL
-21. Public preview at `/preview/[documentId]`
-22. Light / dark / system theme
-23. Settings modal (appearance)
-24. Toast notifications for actions
-25. Loading skeletons and empty states
+13. **Full-text search** (⌘K / Ctrl+K) across page titles and body content
+14. Search modes — **All words** (every term anywhere) or **Exact phrase** (contiguous match)
+15. Search result highlighting with content snippets
+16. Move pages to trash (soft delete)
+17. Trash bin with title filter
+18. Restore pages from trash (including nested children)
+19. Delete pages permanently from trash
+20. Trash banner on archived pages
+21. Publish page to a public read-only link
+22. Unpublish and copy share URL
+23. Public preview at `/preview/[documentId]`
+24. Light / dark / system theme
+25. Settings modal (appearance)
+26. Toast notifications for actions
+27. Loading skeletons and empty states
 
 ---
 
@@ -174,7 +196,6 @@ Planned features and infrastructure improvements for future releases:
 - [ ] **Templates** — starter pages and workspace templates
 - [ ] **Backlinks & wiki links** — `[[page]]` references between documents
 - [ ] **Import / export** — Markdown, PDF, and bulk export
-- [ ] **Full-text search** — search inside page content, not just titles
 - [ ] **Favorites / pinned pages** — quick access in sidebar
 - [ ] **Keyboard shortcuts** — power-user navigation and formatting
 
@@ -218,6 +239,17 @@ pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+### Search tips
+
+Press **⌘K** (Mac) or **Ctrl+K** (Windows/Linux) to open search.
+
+| Mode | Behavior | Example query | Matches |
+|------|----------|---------------|---------|
+| **All words** | Every word must appear somewhere in the page (title or body) | `hello world` | "Hello my world", "Hello to my world goat" |
+| **Exact phrase** | Words must appear together, in order | `hello world` | "Hello world today" only |
+
+Your last selected mode is remembered between sessions. For pages created before search indexing, run the `documents:backfillSearchText` mutation once in the Convex dashboard.
 
 ### Environment variables
 
