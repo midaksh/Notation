@@ -80,3 +80,28 @@ body,
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Notion-style search match highlight (DESIGN.md: yellow-200 / blue accent) */
+  .search-highlight {
+    background-color: #ffe4af;
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 500;
+  }
+
+  .dark .search-highlight {
+    background-color: rgba(9, 127, 232, 0.28);
+    color: #93cdfe;
+  }
+
+  [cmdk-item][aria-selected="true"] .search-highlight {
+    background-color: #ffc95e;
+  }
+
+  .dark [cmdk-item][aria-selected="true"] .search-highlight {
+    background-color: rgba(9, 127, 232, 0.45);
+    color: #e6f3fe;
+  }
+}
