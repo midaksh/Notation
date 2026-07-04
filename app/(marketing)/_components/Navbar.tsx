@@ -13,9 +13,8 @@ import Link from "next/link"
 
 const signInProps = {
   mode: "modal" as const,
-  asChild: true,
-  forceRedirectUrl: "/documents",
-  signUpForceRedirectUrl: "/documents",
+  afterSignInUrl: "/documents",
+  afterSignUpUrl: "/documents",
 }
 
 export function Navbar () {

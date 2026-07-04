@@ -1,6 +1,6 @@
 # Notation
 
-A slim, Notion-style note-taking workspace where documents are reimagined — nested pages, block editing, trash, and public sharing.
+### A slim Note taking workspace where docs are reimagined.
 
 ---
 
@@ -130,17 +130,6 @@ Notation/
 └── public/                   # Logos & static assets
 ```
 
-### Route map
-
-| Route | Access | Description |
-|-------|--------|-------------|
-| `/` | Public | Marketing landing + sign-in |
-| `/documents` | Auth required | Empty workspace / create note |
-| `/documents/[id]` | Auth required | Page editor |
-| `/preview/[id]` | Public (if published) | Read-only shared page |
-| `/utm-stats` | Public | Analytics dashboard |
-
----
 
 ## Live features
 
@@ -172,7 +161,7 @@ Notation/
 
 ---
 
-## Upcoming scalables
+## Upcoming Deliverables
 
 Planned features and infrastructure improvements for future releases:
 
